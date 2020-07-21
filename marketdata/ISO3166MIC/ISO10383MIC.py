@@ -20,25 +20,10 @@ def classname(x): return x.__class__.__qualname__
 #
 # Set up logging
 #
-import logging, logging.handlers
-
-LOGFORMAT = '%(asctime)s %(name)s %(levelname)-8s: %(message)s'
-LOGDATEFORMAT = '%Y-%m-%d %H:%M:%S'
-
-logFormatter = logging.Formatter(fmt=LOGFORMAT, datefmt=LOGDATEFORMAT)
+import logging
 #
-logger = logging.getLogger(P_NAME)
-logger.setLevel(logging.DEBUG)
-
-# log to file
-logFna = P_TMP_DIR +'/{0}.log'.format(P_NAME)
-os.makedirs(P_TMP_DIR, exist_ok=True)
-logFileHandler = logging.handlers.RotatingFileHandler(filename=logFna,
-                                                      mode='a',
-                                                      maxBytes=100*1024, backupCount=5)
-logFileHandler.setLevel(logging.DEBUG)
-logFileHandler.setFormatter(logFormatter)
-logger.addHandler(logFileHandler)
+module_logger = logging.getLogger(__name__)
+module_logger.setLevel(logging.DEBUG)
 
 import datetime
 import requests
@@ -76,11 +61,19 @@ class OneDayHeuristic(BaseHeuristic):
     `project repository <https://github.com/ionrock/cachecontrol>`_
 
     """
+    import logging
     def __init__(self):
-        logger.debug('Class "%s" instantiated.',
+        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
+
+        logger.debug('(From __init__) Class "%s" instantiated.',
                      classname(self)) 
 
     def update_headers(self, response):
+        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
+
+        logger.setlevel(logging.DEBUG)
         logger.debug('"%s": response header "date" = %s.',
                      classname(self),
                      str(response.headers['date']))
@@ -102,6 +95,7 @@ class OneDayHeuristic(BaseHeuristic):
         }
 
     def warning(self, response):
+        logger = logging.getLogger(__name__)
         msg = 'Automatically cached! Response is Stale.'
         return '110 - "%s"' % msg
 
@@ -135,11 +129,15 @@ class OneWeekHeuristic(BaseHeuristic):
     `project repository <https://github.com/ionrock/cachecontrol>`_
 
     """
+    import logging
     def __init__(self):
+        logger = logging.getLogger(__name__)
+        logger.setlevel(logging.DEBUG)
         logger.debug('Class "%s" instantiated.',
                      classname(self)) 
     
     def update_headers(self, response):
+        logger = logging.getLogger(__name__)
         logger.debug('"%s": response header "date" = %s.',
                      classname(self),
                      str(response.headers['date']))
@@ -216,9 +214,14 @@ class ISO10383MIC:
     Contact: MIC-ISO10383.Generic@swift.com
     """
 
+    import logging
     def __init__(self):
+        logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
+        # logger = logging.getLogger(__name__)
         logger.debug('Class "%s" instantiated.',
                      classname(self)) 
+
+        self._logger = logger
         self.instantiationDt = datetime.datetime.now(tz=datetime.timezone.utc)
         
         self.publicationDt = None
@@ -262,6 +265,10 @@ class ISO10383MIC:
         from dateutil import parser as dtparser
         from cachecontrol.caches.file_cache import FileCache
 
+        # logger = logging.getLogger(__name__)
+        lna = classname(self) + '.' + inspect.currentframe().f_code.co_name
+        logger = logging.getLogger(lna)
+        
         logger.debug('Class method "%s" entry.',
                      classname(self) + '.' + inspect.currentframe().f_code.co_name + '()')
         #
@@ -299,8 +306,9 @@ class ISO10383MIC:
             logger.debug('Class method "%s": fetch "%s".',
                          classname(self) + '.' + inspect.currentframe().f_code.co_name + '()',
                          micSite + micRelUrl)
+            cacheOverride = OneDayHeuristic()
             cachedSess = CacheControl(requests.Session(), 
-                                      heuristic=OneDayHeuristic(),
+                                      heuristic=cacheOverride,
                                       cache=FileCache(P_CACHE_DIR))
             resp = cachedSess.get(micSite + micRelUrl)
             binaryPageContent = resp.content
@@ -405,7 +413,53 @@ class ISO10383MIC:
 
 
 if __name__ == '__main__':
-    
+    from ISO10383MIC import ISO10383MIC
+    import logging, logging.handlers
+
+    LOGFORMAT = '%(asctime)s %(name)s %(levelname)-8s %(message)s'
+    LOGDATEFORMAT = '%Y-%m-%d %H:%M:%S'
+    logFormatter = logging.Formatter(fmt=LOGFORMAT, datefmt=LOGDATEFORMAT)
+    #
+    logging.getLogger().setLevel(logging.DEBUG)
+    logger = logging.getLogger()
+    #
+    # log to file
+    logFna = P_TMP_DIR +'/{0}.log'.format(P_NAME)
+    os.makedirs(P_TMP_DIR, exist_ok=True)
+    logFileHandler = logging.handlers.RotatingFileHandler(filename=logFna,
+                                                          mode='a',
+                                                          maxBytes=100*1024, backupCount=5)
+    logFileHandler.setLevel(logging.DEBUG)
+    logFileHandler.setFormatter(logFormatter)
+    logger.addHandler(logFileHandler)
+    #
+
+    def show_loggers():
+        loggers = [('root', logging.getLogger())]
+        for name in sorted(logging.Logger.manager.loggerDict.keys()):
+            logger = logging.getLogger(name)
+            loggers.append( (name, logger) )
+        for name, logger in loggers:
+            indent = ""
+            if name != 'root':
+                indent = "   "*(name.count('.')+1)
+            if logger.propagate:
+                prop = "+ "
+            else:
+                prop = "  "
+            handlers = ""
+            if len(logger.handlers) > 0:
+                handlers = ": " + str(logger.handlers)
+            level = logging.getLevelName(logger.level)
+            eff_level = logging.getLevelName(logger.getEffectiveLevel())
+            if level == eff_level:
+                level_str = ' [%s]' % level
+            else:
+                level_str = ' [%s -> %s]' % (level, eff_level)
+            print(indent + prop + name + level_str + handlers)
+
+    show_loggers()
+        
     m = ISO10383MIC()
     mDf = m.downloadMic()
     print('Returned MIC DataFrame:')
