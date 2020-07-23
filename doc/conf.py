@@ -21,6 +21,11 @@ d = os.path.abspath(os.path.join(here, '..', 'marketdata'))
 print('here={:s}'.format(here))
 print('d={:s}'.format(d))
 sys.path.insert(0, d)
+here = os.path.abspath(os.path.dirname(__file__))
+d = os.path.abspath(os.path.join(here, '..', 'marketdata', 'ISO3166MIC'))
+print('here={:s}'.format(here))
+print('d={:s}'.format(d))
+sys.path.insert(0, d)
 
 
 # -- Project information -----------------------------------------------------
