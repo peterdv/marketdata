@@ -1,10 +1,16 @@
 # -*- coding: utf-8; mode: Python; -*-
 
-import os
+import os, sys
 import datetime
 import csv
-import pandas as pd
 import inspect
+from lxml import html
+from dateutil import parser as dtparser
+import requests
+from cachecontrol import CacheControl
+from cachecontrol.caches.file_cache import FileCache
+import pandas as pd
+import logging
 
 # docstring guide https://numpydoc.readthedocs.io/en/latest/format.html
 
@@ -20,14 +26,13 @@ def classname(x): return x.__class__.__qualname__
 #
 # Set up logging
 #
-import logging
 #
 module_logger = logging.getLogger(__name__)
 module_logger.setLevel(logging.DEBUG)
 
-#from oneDayHeuristic import OneDayHeuristic
-from . import oneDayHeuristic
-
+from oneDayHeuristic import OneDayHeuristic
+#from . import oneDayHeuristic
+#import oneDayHeuristic
 
 
 class ISO10383MIC:
@@ -80,7 +85,7 @@ class ISO10383MIC:
     BELGIUM
     Contact: MIC-ISO10383.Generic@swift.com
     """
-
+    
     import logging
     def __init__(self):
         logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
@@ -125,12 +130,6 @@ class ISO10383MIC:
             The MIC registry as downloaded.
 
         """
-        import os
-        import requests
-        from lxml import html
-        import csv, sys
-        from dateutil import parser as dtparser
-        from cachecontrol.caches.file_cache import FileCache
 
         # logger = logging.getLogger(__name__)
         lna = classname(self) + '.' + inspect.currentframe().f_code.co_name

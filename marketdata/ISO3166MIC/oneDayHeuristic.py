@@ -41,24 +41,23 @@ class OneDayHeuristic(BaseHeuristic):
 
     """
     def __init__(self):
-        # logger = logging.getLogger(__name__)
-        logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
+        logger = logging.getLogger(__name__)
+        #logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
 
         logger.debug('Class "%s" instantiated.',
                      classname(self)) 
 
     def update_headers(self, response):
         logger = logging.getLogger(__name__)
-        logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
+        # logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
 
-        logger.setlevel(logging.DEBUG)
         logger.debug('"%s": response header "date" = %s.',
                      classname(self),
                      str(response.headers['date']))
         logger.debug('"%s": response header "expires" = %s.',
                      classname(self),
-                     str(response.headers['cache-control']))
-        logger.debug('"%s": response header "expires" = %s.',
+                     str(response.headers['expires']))
+        logger.debug('"%s": response header "cache-control" = %s.',
                      classname(self),
                      str(response.headers['cache-control']))
 

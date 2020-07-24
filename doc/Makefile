@@ -18,7 +18,7 @@ help:
 realclean: cleanapidoc clean
 	rm -f *~
 
-apidoc: Makefile
+apidoc:
 	sphinx-apidoc -f --output-dir=$(APIDOCDIR) --module-first ../marketdata
 
 cleanapidoc:
