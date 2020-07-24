@@ -13,19 +13,19 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
+#sys.path.insert(0, os.path.abspath('.'))
+#sys.path.insert(0, os.path.abspath('../'))
 #
 here = os.path.abspath(os.path.dirname(__file__))
 d = os.path.abspath(os.path.join(here, '..', 'marketdata'))
 print('here={:s}'.format(here))
 print('d={:s}'.format(d))
 sys.path.insert(0, d)
-here = os.path.abspath(os.path.dirname(__file__))
-d = os.path.abspath(os.path.join(here, '..', 'marketdata', 'ISO3166MIC'))
-print('here={:s}'.format(here))
-print('d={:s}'.format(d))
-sys.path.insert(0, d)
+#here = os.path.abspath(os.path.dirname(__file__))
+#d = os.path.abspath(os.path.join(here, '..', 'marketdata', 'ISO3166MIC'))
+#print('here={:s}'.format(here))
+#print('d={:s}'.format(d))
+#sys.path.insert(0, d)
 
 
 # -- Project information -----------------------------------------------------
@@ -43,20 +43,21 @@ author = 'Peter Dahl Vestergaard'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.inheritance_diagram',
-    'autoapi.sphinx',
-#    'sphinx.ext.autosummary', 
-    'sphinx.ext.napoleon',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
 # Document Python Code
+# https://sphinx-autoapi.readthedocs.io/en/latest/
+extensions.append('autoapi.extension')
 autoapi_type = 'python'
-autoapi_dir = '../marketdata'
+autoapi_dirs = []
+autoapi_dirs.append('../marketdata')
+autoapi_dirs.append('../marketdata/ISO3166MIC')
 
-#autosummary_generate = True  # Turn on sphinx.ext.autosummary
-
-# Napoleon settings
+# Support for NumPy and Google style docstrings
+# https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
+extensions.append('sphinx.ext.napoleon')
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
