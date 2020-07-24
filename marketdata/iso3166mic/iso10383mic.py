@@ -40,8 +40,10 @@ module_logger.setLevel(logging.DEBUG)
 
 
 class ISO10383MIC:
-    """The ISO10383MIC class represents a registry of exchanges,
-    trading platforms, markets and trade reporting facilities
+    """Registry of Market Identification Codes.
+
+    The ISO10383MIC class represents a registry of exchanges,
+    trading platforms, markets and trade reporting facilities.
 
 
     Parameters
