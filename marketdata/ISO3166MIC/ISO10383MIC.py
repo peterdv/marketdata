@@ -25,7 +25,8 @@ import logging
 module_logger = logging.getLogger(__name__)
 module_logger.setLevel(logging.DEBUG)
 
-from oneDayHeuristic import OneDayHeuristic
+#from oneDayHeuristic import OneDayHeuristic
+from . import oneDayHeuristic
 
 
 
