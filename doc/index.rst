@@ -9,18 +9,16 @@ Welcome to marketdata's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+	     
+   style_guide        
 
-
-
-
-   apidoc/modules
     
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex` :noindex:
+* :ref:`modindex`
 * :ref:`search`
 
 
