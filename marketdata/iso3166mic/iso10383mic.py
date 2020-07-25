@@ -12,7 +12,7 @@ from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 import pandas as pd
 import logging
-from oneDayHeuristic import OneDayHeuristic
+from one_day_heuristic import OneDayHeuristic
 # from . import oneDayHeuristic
 # import oneDayHeuristic
 
@@ -40,10 +40,11 @@ module_logger.setLevel(logging.DEBUG)
 
 
 class ISO10383MIC:
-    """Registry of Market Identification Codes.
+    """Registry of Market Identifier Codes.
 
     The ISO10383MIC class represents a registry of exchanges,
-    trading platforms, markets and trade reporting facilities.
+    trading platforms, regulated or non-regulated markets
+    and trade reporting facilities.
 
 
     Parameters
@@ -52,15 +53,15 @@ class ISO10383MIC:
 
     Attributes
     ----------
-    implementationDt : pd.Timestamp
+    publication_time : pd.Timestamp
+        The publication time of this version of the MIC registry.
+    implementation_time : pd.Timestamp
         The implementation time of this version of the MIC registry.
-    self.micDf : pandas.DataFrame
-        The currently available copy of this version of the MIC registry
-    nextPublicationDt : pd.Timestamp
+    next_publication_time : pd.Timestamp
         The expected time of the next publication time of
         next version of the MIC registry.
-    publicationDt : pd.Timestamp
-        The publication time of this version of the MIC registry.
+    self.mic : pandas.DataFrame
+        The currently available copy of this version of the MIC registry
 
     Notes
     -----
@@ -106,16 +107,16 @@ class ISO10383MIC:
         self._logger = logger
         self.instantiationDt = datetime.datetime.now(tz=datetime.timezone.utc)
 
-        self.publicationDt = None
-        self.implementationDt = None
-        self.nextPublicationDt = None
-        self.micDf = None
+        self.publication_time = None
+        self.implementation_time = None
+        self.next_publication_time = None
+        self.mic = None
 
-    def downloadMic(self,
-                    micSite='https://www.iso20022.org',
-                    micRelUrl='/market-identifier-codes',
-                    micEncoding='windows-1252'):
-        """Download MIC registry and convert it to a pandas DataFrame.
+    def download_mic(self,
+                     mic_site='https://www.iso20022.org',
+                     mic_rel_url='/market-identifier-codes',
+                     mic_encoding='windows-1252'):
+        """Download MIC registry and convert it to a pandas.DataFrame.
 
         The default authoritative source is on the web at
         `https://www.iso20022.org/market-identifier-codes
@@ -125,14 +126,14 @@ class ISO10383MIC:
 
         Parameters
         ----------
-        micSite : str, optional
+        mic_site : str, optional
             Protocol and site part of the URL of
             the MIC registry  publication site to download from.
             Defaults to 'https://www.iso20022.org'.
-        micRelUrl : str, optional
+        mic_rel_url : str, optional
             Relative URL to the MIC registry publication site to download from.
             Defaults to '/market-identifier-codes'.
-        micEncoding : str, optional
+        mic_encoding : str, optional
             Character encoding of the csv file referenced to
             on the MIC retistry publication site.
             Defaults to 'windows-1252'.
@@ -155,33 +156,33 @@ class ISO10383MIC:
         # Coded from the contents of
         # 'https://www.iso20022.org/market-identifier-codes'
         #
-        micPersistencePath = P_PERSISTENCE_DIR + classname(self)
-        os.makedirs(micPersistencePath, exist_ok=True)
-        fnaPub = micPersistencePath + '/market-identifier-codes.html'
+        mic_persistence_path = P_PERSISTENCE_DIR + '/' + classname(self)
+        os.makedirs(mic_persistence_path, exist_ok=True)
+        fna_pub = mic_persistence_path + '/' + 'market-identifier-codes.html'
 
-        usePersistedMicPub = False
-        if os.path.isfile(fnaPub):
+        use_persisted_mic_pub = False
+        if os.path.isfile(fna_pub):
             logger.debug('Class method "%s": Persistence file "%s" exists.',
                          classname(self)
                          + '.'
                          + inspect.currentframe().f_code.co_name + '()',
-                         fnaPub)
-            mtimeDt = datetime.datetime.fromtimestamp(os.stat(fnaPub).st_mtime,
-                                                      datetime.timezone.utc)
-            logger.debug('... mtime = ' + mtimeDt.isoformat())
-            nowDt = datetime.datetime.now(tz=datetime.timezone.utc)
-            logger.debug('... nowDt = ' + nowDt.isoformat())
-            ageTd = nowDt - mtimeDt
-            logger.debug('... File age = ' + str(ageTd))
-            if (ageTd < datetime.timedelta(days=0, hours=23)):
+                         fna_pub)
+            now = datetime.datetime.now(tz=datetime.timezone.utc)
+            mtime = datetime.datetime.fromtimestamp(os.stat(fna_pub).st_mtime,
+                                                    datetime.timezone.utc)
+            age = now - mtime
+            logger.debug('... mtime = ' + mtime.isoformat())
+            logger.debug('... now = ' + now.isoformat())
+            logger.debug('... File age = ' + str(age))
+            if (age < datetime.timedelta(days=0, hours=23)):
                 logger.debug(
                     '... less than 23 hours old - use persisted file.')
-                usePersistedMicPub = True
+                use_persisted_mic_pub = True
         #
-        if (usePersistedMicPub):
+        if (use_persisted_mic_pub):
             # read content from persisted file
-            fh = open(fnaPub, 'rb')
-            binaryPageContent = fh.read()
+            fh = open(fna_pub, 'rb')
+            binary_page_content = fh.read()
             fh.close()
         else:
             logger.debug('Class method "%s": Persisted file "%s"'
@@ -190,127 +191,127 @@ class ISO10383MIC:
                          + '.'
                          + inspect.currentframe().f_code.co_name
                          + '()',
-                         fnaPub)
+                         fna_pub)
             # Get the contents of the MIC publication url
             logger.debug('Class method "%s": fetch "%s".',
                          classname(self)
                          + '.'
                          + inspect.currentframe().f_code.co_name
                          + '()',
-                         micSite + micRelUrl)
-            cacheOverride = OneDayHeuristic()
-            cachedSess = CacheControl(requests.Session(),
-                                      heuristic=cacheOverride,
-                                      cache=FileCache(P_CACHE_DIR))
-            resp = cachedSess.get(micSite + micRelUrl)
-            binaryPageContent = resp.content
+                         mic_site + mic_rel_url)
+            cache_override = OneDayHeuristic()
+            cached_sess = CacheControl(requests.Session(),
+                                       heuristic=cache_override,
+                                       cache=FileCache(P_CACHE_DIR))
+            resp = cached_sess.get(mic_site + mic_rel_url)
+            binary_page_content = resp.content
             #
             # Write new content to persisted file
-            fh = open(fnaPub, 'wb')
-            fh.write(binaryPageContent)
+            fh = open(fna_pub, 'wb')
+            fh.write(binary_page_content)
             fh.close()
         #
         # Parse it using the html module and save the result in tree.
         #
         # We need to use page.content rather than page.text because
         # html.fromstring implicitly expects bytes as input.
-        tree = html.fromstring(binaryPageContent)
+        tree = html.fromstring(binary_page_content)
         # A good introduction to XPath is on
         # http://www.w3schools.com/xml/xpath_intro.asp
-        XpathtoRow = '//*[@id="block-iso20022-theme-content"]/article' \
-            + '/div[2]/div[3]/div/div/table/tbody/tr'
-        XPathToCsvUrl = XpathtoRow + '/td[3]/a/@href'
-        XPathToPubDate = XpathtoRow + '/td[6]/text()'
-        XPathToImpDate = XpathtoRow + '/td[7]/text()'
-        XPathToNxtDate = XpathtoRow + '/td[8]/text()'
         #
-        micCsvRelUrl = tree.xpath(XPathToCsvUrl)[0].replace('\u00A0', ' ')
+        XPATH_ROW = '//*[@id="block-iso20022-theme-content"]/article' \
+            + '/div[2]/div[3]/div/div/table/tbody/tr'
+        XPATH_CSV_URL = XPATH_ROW + '/td[3]/a/@href'
+        XPATH_PUB_DATE = XPATH_ROW + '/td[6]/text()'
+        XPATH_IMP_DATE = XPATH_ROW + '/td[7]/text()'
+        XPATH_NEXT_DATE = XPATH_ROW + '/td[8]/text()'
+        #
+        mic_csv_rel_url = tree.xpath(XPATH_CSV_URL)[0].replace('\u00A0', ' ')
         logger.debug('Parsed Rel. URL to publication in csv format: "'
-                     + micCsvRelUrl
+                     + mic_csv_rel_url
                      + '"')
-        d = tree.xpath(XPathToPubDate)[0].replace('\u00A0', ' ')
-        self.publicationDt \
+        d = tree.xpath(XPATH_PUB_DATE)[0].replace('\u00A0', ' ')
+        self.publication_time \
             = dtparser.parse(d).replace(tzinfo=datetime.timezone.utc)
         logger.debug('Parsed Publication date: '
-                     + self.publicationDt.isoformat())
-        d = tree.xpath(XPathToImpDate)[0].replace('\u00A0', ' ')
-        self.implementationDt \
+                     + self.publication_time.isoformat())
+        d = tree.xpath(XPATH_IMP_DATE)[0].replace('\u00A0', ' ')
+        self.implementation_time \
             = dtparser.parse(d).replace(tzinfo=datetime.timezone.utc)
         logger.debug('Parsed Implementation date: '
-                     + self.implementationDt.isoformat())
-        d = tree.xpath(XPathToNxtDate)[0].replace('\u00A0', ' ')
-        self.nextPublicationDt \
+                     + self.implementation_time.isoformat())
+        d = tree.xpath(XPATH_NEXT_DATE)[0].replace('\u00A0', ' ')
+        self.next_publication_time \
             = dtparser.parse(d).replace(tzinfo=datetime.timezone.utc)
         logger.debug('Parsed Next Publication date: '
-                     + self.nextPublicationDt.isoformat())
+                     + self.next_publication_time.isoformat())
         #
         # Fetch the MIC registry content as a CSV file
         #
-        fnaCsv = P_PERSISTENCE_DIR + '/TmpISO10383_MIC.csv'
-        os.makedirs(P_PERSISTENCE_DIR, exist_ok=True)
+        fna_csv = mic_persistence_path + '/' + 'ISO10383_MIC.csv'
 
-        usePersistedMicCsv = False
-        if usePersistedMicPub and os.path.isfile(fnaCsv):
+        use_persisted_mic_csv = False
+        if use_persisted_mic_pub and os.path.isfile(fna_csv):
             logger.debug('Class method "%s": Persisted csv file "%s" exists.',
                          classname(self)
                          + '.'
                          + inspect.currentframe().f_code.co_name
                          + '()',
-                         fnaCsv)
-            mtimeDt = datetime.datetime.fromtimestamp(os.stat(fnaCsv).st_mtime,
-                                                      datetime.timezone.utc)
-            logger.debug('... mtime = ' + mtimeDt.isoformat())
-            nowDt = datetime.datetime.now(tz=datetime.timezone.utc)
-            logger.debug('... nowDt = ' + nowDt.isoformat())
-            ageTd = nowDt - mtimeDt
-            logger.debug('... File age = ' + str(ageTd))
-            if (ageTd < datetime.timedelta(days=0, hours=23)):
+                         fna_csv)
+            now = datetime.datetime.now(tz=datetime.timezone.utc)
+            mtime = datetime.datetime.fromtimestamp(os.stat(fna_csv).st_mtime,
+                                                    datetime.timezone.utc)
+            age = now - mtime
+            logger.debug('... mtime = ' + mtime.isoformat())
+            logger.debug('... now   = ' + now.isoformat())
+            logger.debug('... File age = ' + str(age))
+            if (age < datetime.timedelta(days=0, hours=23)):
                 logger.debug(
                     '... less than 23 hours old - use persisted file.')
-                usePersistedMicCsv = True
+                use_persisted_mic_csv = True
         #
-        if (usePersistedMicCsv):
+        if (use_persisted_mic_csv):
             # read content from persisted file
             logger.debug('Class method "%s": Persisted file "%s" is suitable.',
                          classname(self)
                          + '.'
                          + inspect.currentframe().f_code.co_name
                          + '()',
-                         fnaCsv)
+                         fna_csv)
         else:
             logger.debug('Class method "%s": Persisted file "%s"'
                          ' is unsuitable, fetch from source.',
-                         + classname(self)
+                         classname(self)
                          + '.'
                          + inspect.currentframe().f_code.co_name
                          + '()',
-                         fnaCsv)
-            csvUrl = micSite + micCsvRelUrl
+                         fna_csv)
+            csv_url = mic_site + mic_csv_rel_url
             logger.debug('Class method "%s": fetch "%s to local file %s".',
                          classname(self)
                          + '.'
                          + inspect.currentframe().f_code.co_name
                          + '()',
-                         csvUrl,
-                         fnaCsv)
+                         csv_url,
+                         fna_csv)
             # Get the csv file
-            cachedSess = CacheControl(requests.Session(),
-                                      heuristic=OneDayHeuristic(),
-                                      cache=FileCache(P_CACHE_DIR))
-            resp = cachedSess.get(csvUrl)
+            cached_sess = CacheControl(requests.Session(),
+                                       heuristic=OneDayHeuristic(),
+                                       cache=FileCache(P_CACHE_DIR))
+            resp = cached_sess.get(csv_url)
             # Write new (binary) csv file to persisted file
-            fh = open(fnaCsv, 'wb')
+            fh = open(fna_csv, 'wb')
             fh.write(resp.content)
             fh.close()
         #
         #
         # Read and parse the downloaded CSV file to a list of Dict
-        micRows = []
-        with open(fnaCsv, 'r', encoding=micEncoding) as theFile:
-            reader = csv.DictReader(theFile)
+        mic_rows = []
+        with open(fna_csv, 'r', encoding=mic_encoding) as the_file:
+            reader = csv.DictReader(the_file)
             try:
                 for line in reader:
-                    micRows.append(line)
+                    mic_rows.append(line)
             except csv.Error as e:
                 msg = 'file {}, line {}: {}'.format(
                     filename, reader.line_num, e)
@@ -320,10 +321,10 @@ class ISO10383MIC:
         # Create DataFrame from the list of OrderedDict's
         from collections import Counter
         row = Counter()
-        for k in micRows:
+        for k in mic_rows:
             row.update(k)
-        self.micDf = pd.DataFrame([k.values() for k in micRows],
-                                  columns=row.keys())
+        self.mic = pd.DataFrame([k.values() for k in mic_rows],
+                                columns=row.keys())
         #
         # print(self.micDf)
         logger.debug('Class method "%s" return MIC as pandas DataFrame.',
@@ -331,7 +332,7 @@ class ISO10383MIC:
                      + '.'
                      + inspect.currentframe().f_code.co_name
                      + '()')
-        return(self.micDf)
+        return(self.mic)
 
 
 if __name__ == '__main__':
@@ -340,22 +341,22 @@ if __name__ == '__main__':
 
     LOGFORMAT = '%(asctime)s %(name)s %(levelname)-8s %(message)s'
     LOGDATEFORMAT = '%Y-%m-%d %H:%M:%S'
-    logFormatter = logging.Formatter(fmt=LOGFORMAT, datefmt=LOGDATEFORMAT)
+    log_formatter = logging.Formatter(fmt=LOGFORMAT, datefmt=LOGDATEFORMAT)
     #
     logging.getLogger().setLevel(logging.DEBUG)
     logger = logging.getLogger()
     #
     # log to file
-    logFna = P_TMP_DIR + '/{0}.log'.format(P_NAME)
+    log_fna = P_TMP_DIR + '/{0}.log'.format(P_NAME)
     os.makedirs(P_TMP_DIR, exist_ok=True)
-    logFileHandler = logging.handlers.RotatingFileHandler(
-        filename=logFna,
+    log_file_handler = logging.handlers.RotatingFileHandler(
+        filename=log_fna,
         mode='a',
         maxBytes=100 * 1024,
         backupCount=5)
-    logFileHandler.setLevel(logging.DEBUG)
-    logFileHandler.setFormatter(logFormatter)
-    logger.addHandler(logFileHandler)
+    log_file_handler.setLevel(logging.DEBUG)
+    log_file_handler.setFormatter(log_formatter)
+    logger.addHandler(log_file_handler)
     #
 
     def show_loggers():
@@ -385,6 +386,6 @@ if __name__ == '__main__':
     show_loggers()
 
     m = ISO10383MIC()
-    mDf = m.downloadMic()
+    df = m.download_mic()
     print('Returned MIC DataFrame:')
-    print(mDf)
+    print(df)

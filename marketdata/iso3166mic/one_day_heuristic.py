@@ -18,18 +18,11 @@ def classname(x):
 
 
 class OneDayHeuristic(BaseHeuristic):
-    """The OneDayHeuristic class implenments a caching strategy
+    """One day caching stratigy for `CacheControl`.
+
+    This class implenments a caching strategy
     where every request should be cached for a day
     regardless of the upstream cachingstrategy communicated in the response.
-
-    When a response is received and we are testing for whether it is cacheable,
-    the heuristic is applied before checking its headers.
-    We also set a warning header
-    to communicate why the response might be stale.
-    The original response is passed into the warning header
-    in order to use its values.
-    For example, if the response has been expired
-    for more than 24 hours a Warning 113 should be used.
 
     Parameters
     ----------
@@ -40,6 +33,15 @@ class OneDayHeuristic(BaseHeuristic):
     Notes
     -----
 
+    When a response is received and we are testing for whether it is cacheable,
+    the heuristic is applied before checking its headers.
+    We also set a warning header
+    to communicate why the response might be stale.
+    The original response is passed into the warning header
+    in order to use its values.
+    For example, if the response has been expired
+    for more than 24 hours a Warning 113 should be used.
+
     The `CacheControl` package contains
     the httplib2 caching algorithms packaged up for use with requests.
     The
@@ -48,6 +50,7 @@ class OneDayHeuristic(BaseHeuristic):
     `project repository <https://github.com/ionrock/cachecontrol>`_
 
     """
+
     def __init__(self):
         logger = logging.getLogger(__name__)
         # logger = \
