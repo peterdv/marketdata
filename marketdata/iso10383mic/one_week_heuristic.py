@@ -1,8 +1,6 @@
 # -*- coding: utf-8; mode: Python; -*-
 
 import datetime
-import requests
-from cachecontrol import CacheControl
 from cachecontrol.heuristics import BaseHeuristic
 from email.utils import parsedate, formatdate
 import calendar
@@ -83,6 +81,6 @@ class OneDayHeuristic(BaseHeuristic):
         }
 
     def warning(self, response):
-        logger = logging.getLogger(__name__)
+        # logger = logging.getLogger(__name__)
         msg = 'Automatically cached! Response is Stale.'
         return '110 - "%s"' % msg

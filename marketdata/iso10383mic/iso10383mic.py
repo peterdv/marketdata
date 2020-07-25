@@ -31,6 +31,8 @@ def typename(x):
 
 def classname(x):
     return x.__class__.__qualname__
+
+
 #
 # Set up logging
 #
@@ -314,7 +316,7 @@ class ISO10383MIC:
                     mic_rows.append(line)
             except csv.Error as e:
                 msg = 'file {}, line {}: {}'.format(
-                    filename, reader.line_num, e)
+                    fna_csv, reader.line_num, e)
                 logger.critical(msg)
                 sys.exit(msg)
         #
