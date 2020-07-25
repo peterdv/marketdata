@@ -53,11 +53,11 @@ class ISO10383MIC:
 
     Attributes
     ----------
-    publication_time : pd.Timestamp
+    publication_time : datetime.datetime
         The publication time of this version of the MIC registry.
-    implementation_time : pd.Timestamp
+    implementation_time : datetime.datetime
         The implementation time of this version of the MIC registry.
-    next_publication_time : pd.Timestamp
+    next_publication_time : datetime.datetime
         The expected time of the next publication time of
         next version of the MIC registry.
     self.mic : pandas.DataFrame
