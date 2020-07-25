@@ -16,16 +16,18 @@ help:
 .PHONY: help Makefile
 
 realclean: cleanapidoc clean
-	rm -f *~
-
-apidoc:
-	sphinx-apidoc -f --output-dir=$(APIDOCDIR) --module-first ../marketdata
+	find . -name "*~"  -print -exec rm -f {} \;
+	find . -name ".*~" -print -exec rm -f {} \;
 
 cleanapidoc:
 	rm -fr $(APIDOCDIR)
 
+apidoc:
+	sphinx-apidoc -f --output-dir=$(APIDOCDIR) --module-first ../marketdata
+
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile apidoc
+%: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 

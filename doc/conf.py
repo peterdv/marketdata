@@ -41,20 +41,31 @@ author = 'Peter Dahl Vestergaard'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
+#
 # Document Python Code
-# https://sphinx-autoapi.readthedocs.io/en/latest/
-extensions.append('autoapi.extension')
-autoapi_type = 'python'
-autoapi_dirs = []
-autoapi_dirs.append('../marketdata')
-autoapi_dirs.append('../marketdata/ISO3166MIC')
+#
+use_module = 'autoapi'
 
+if use_module == 'autodoc':
+    #
+    # Using autodoc
+    # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
+    extensions.append('sphinx.ext.autodoc')
+elif use_module == 'autoapi':
+    #
+    # Using autoapi
+    # https://sphinx-autoapi.readthedocs.io/en/latest/
+    extensions.append('autoapi.extension')
+    autoapi_type = 'python'
+    autoapi_dirs = []
+    autoapi_dirs.append('../marketdata')
+    # autoapi_dirs.append('../marketdata/iso10383mic')
+#
 # Support for NumPy and Google style docstrings
 # https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
 extensions.append('sphinx.ext.napoleon')
