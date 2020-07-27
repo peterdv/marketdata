@@ -1,5 +1,5 @@
 # -*- coding: utf-8; mode: Python; -*-
-
+import inspect
 import datetime
 from cachecontrol.heuristics import BaseHeuristic
 from email.utils import parsedate, formatdate
@@ -50,17 +50,14 @@ class OneDayHeuristic(BaseHeuristic):
     """
 
     def __init__(self):
-        logger = logging.getLogger(__name__)
-        # logger = \
-        #     logging.getLogger(__name__).getChild(self.__class__.__name__)
+        lna = classname(self) + '.' + inspect.currentframe().f_code.co_name
+        logger = logging.getLogger(lna)
         logger.debug('Class "%s" instantiated.',
                      classname(self))
 
     def update_headers(self, response):
-        logger = logging.getLogger(__name__)
-        # logger = \
-        #     logging.getLogger(__name__).getChild(self.__class__.__name__)
-
+        lna = classname(self) + '.' + inspect.currentframe().f_code.co_name
+        logger = logging.getLogger(lna)
         logger.debug('"%s": response header "date" = %s.',
                      classname(self),
                      str(response.headers['date']))
@@ -82,6 +79,8 @@ class OneDayHeuristic(BaseHeuristic):
         }
 
     def warning(self, response):
-        # logger = logging.getLogger(__name__)
+        lna = classname(self) + '.' + inspect.currentframe().f_code.co_name
+        logger = logging.getLogger(lna)
+        logger.debug('Add warning (110) headder')
         msg = 'Automatically cached! Response is Stale.'
         return '110 - "%s"' % msg

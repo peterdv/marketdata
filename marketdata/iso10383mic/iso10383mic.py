@@ -16,6 +16,12 @@ from one_day_heuristic import OneDayHeuristic
 # from . import oneDayHeuristic
 # import oneDayHeuristic
 
+#
+# Set up module level logging
+#
+#
+module_logger = logging.getLogger(__name__)
+module_logger.setLevel(logging.DEBUG)
 
 # docstring guide https://numpydoc.readthedocs.io/en/latest/format.html
 
@@ -32,13 +38,38 @@ def typename(x):
 def classname(x):
     return x.__class__.__qualname__
 
+#
+#
+# https://stackoverflow.com/questions/10123929/fetch-a-file-from-a-local-url-with-python-requests
+#
+# As @WooParadog explained requests library doesn't know how to handle local files.
+# Although, current version allows to define transport adapters.
+#
+# Therefore you can simply define you own adapter which will be able to handle local files, e.g.:
+#
+from requests_testadapter import Resp
 
-#
-# Set up logging
-#
-#
-module_logger = logging.getLogger(__name__)
-module_logger.setLevel(logging.DEBUG)
+class LocalFileAdapter(requests.adapters.HTTPAdapter):
+    def build_response_from_file(self, request):
+        lna = classname(self) + '.' + inspect.currentframe().f_code.co_name
+        logger = logging.getLogger(lna)
+
+        logger.debug('url       = "{}"'.format(request.url))
+        file_path = request.url[7:]
+        logger.debug('file_path = "{}"'.format(file_path))
+        with open(file_path, 'rb') as file:
+            buff = bytearray(os.path.getsize(file_path))
+            file.readinto(buff)
+            resp = Resp(buff)
+            r = self.build_response(request, resp)
+
+            return r
+
+    def send(self, request, stream=False, timeout=None,
+             verify=True, cert=None, proxies=None):
+
+        return self.build_response_from_file(request)
+
 
 
 class ISO10383MIC:
@@ -52,18 +83,39 @@ class ISO10383MIC:
     Parameters
     ----------
 
+    mic_site : str, optional
+        Protocol and site part of the URL of
+        the MIC registry  publication site to download from.
+    mic_rel_url : str, optional
+        Relative URL to the MIC registry publication site to download from.
+    mic_csv_encoding : str, optional
+        Character encoding of the csv file referenced to
+        on the MIC retistry publication site.
+    mic_tmp_dir : str, optional
+        Path to a temporary directory.
+    mic_cache_dir : str, optional
+        Path name to a directory to store cached data.
+    mic_persistence_dir : str, optional
+        Path name to a directory to store data intended
+        to exist, and be shared across class instances.
 
     Attributes
     ----------
-    publication_time : datetime.datetime
+    publication_time : datetime.datetime or None
         The publication time of this version of the MIC registry.
-    implementation_time : datetime.datetime
+    implementation_time : datetime.datetime or None
         The implementation time of this version of the MIC registry.
-    next_publication_time : datetime.datetime
+    next_publication_time : datetime.datetime or None
         The expected time of the next publication time of
         next version of the MIC registry.
-    self.mic : pandas.DataFrame
-        The currently available copy of this version of the MIC registry
+    mic : pandas.DataFrame or None
+        This version of the MIC registry.
+    from_cache : boleean
+        Is data fetched from cached session, rather than
+        from `mic_site`.
+    from_persisted : boleean
+        Is data fetched from persisted data, rather than
+        from `mic_site`, or cached session.
 
     Notes
     -----
@@ -98,11 +150,18 @@ class ISO10383MIC:
     Contact: MIC-ISO10383.Generic@swift.com
     """
 
-    import logging
 
-    def __init__(self):
-        logger = logging.getLogger(__name__).getChild(self.__class__.__name__)
-        # logger = logging.getLogger(__name__)
+    def __init__(self,
+                 mic_site='https://www.iso20022.org',
+                 mic_rel_url='/market-identifier-codes',
+                 mic_csv_encoding='windows-1252',
+                 mic_tmp_dir='/tmp/ISO10383MIC',
+                 mic_cache_dir='/tmp/ISO10383MIC/cache',
+                 mic_persistence_dir='/tmp/ISO10383MIC/persistence'):
+        #
+        lna = classname(self) + '.' + inspect.currentframe().f_code.co_name
+        logger = logging.getLogger(lna)
+
         logger.debug('Class "%s" instantiated.',
                      classname(self))
 
@@ -113,11 +172,19 @@ class ISO10383MIC:
         self.implementation_time = None
         self.next_publication_time = None
         self.mic = None
+        self.from_cache = False
+        self.from_persisted = False
+        #
+        self._mic_site = mic_site
+        self._mic_rel_url = mic_rel_url
+        self._mic_csv_encoding = mic_csv_encoding
+        self._mic_tmp_dir = mic_tmp_dir
+        self._mic_cache_dir = mic_cache_dir
+        self._mic_persistence_dir = mic_persistence_dir
+        
 
-    def download_mic(self,
-                     mic_site='https://www.iso20022.org',
-                     mic_rel_url='/market-identifier-codes',
-                     mic_encoding='windows-1252'):
+
+    def download_mic(self):
         """Download MIC registry and convert it to a pandas.DataFrame.
 
         The default authoritative source is on the web at
@@ -158,16 +225,15 @@ class ISO10383MIC:
         # Coded from the contents of
         # 'https://www.iso20022.org/market-identifier-codes'
         #
-        mic_persistence_path = P_PERSISTENCE_DIR + '/' + classname(self)
-        os.makedirs(mic_persistence_path, exist_ok=True)
-        fna_pub = mic_persistence_path + '/' + 'market-identifier-codes.html'
+        os.makedirs(self._mic_persistence_dir, exist_ok=True)
+        fna_pub = os.path.join(self._mic_persistence_dir, 'market-identifier-codes.html')
+        #
+        requests_session = requests.session()
+        requests_session.mount('file://', LocalFileAdapter())
 
         use_persisted_mic_pub = False
         if os.path.isfile(fna_pub):
-            logger.debug('Class method "%s": Persistence file "%s" exists.',
-                         classname(self)
-                         + '.'
-                         + inspect.currentframe().f_code.co_name + '()',
+            logger.debug(' Persistence file "%s" exists.',
                          fna_pub)
             now = datetime.datetime.now(tz=datetime.timezone.utc)
             mtime = datetime.datetime.fromtimestamp(os.stat(fna_pub).st_mtime,
@@ -186,32 +252,41 @@ class ISO10383MIC:
             fh = open(fna_pub, 'rb')
             binary_page_content = fh.read()
             fh.close()
+            self.from_cache = False
+            self.from_persisted = True
         else:
-            logger.debug('Class method "%s": Persisted file "%s"'
+            logger.debug('Persisted file "%s"'
                          ' is unsuitable, fetch from source.',
-                         classname(self)
-                         + '.'
-                         + inspect.currentframe().f_code.co_name
-                         + '()',
                          fna_pub)
             # Get the contents of the MIC publication url
-            logger.debug('Class method "%s": fetch "%s".',
-                         classname(self)
-                         + '.'
-                         + inspect.currentframe().f_code.co_name
-                         + '()',
-                         mic_site + mic_rel_url)
+            logger.debug('fetch from "%s".',
+                         self._mic_site + self._mic_rel_url)
+            #
             cache_override = OneDayHeuristic()
-            cached_sess = CacheControl(requests.Session(),
+            
+            # cached_sess = CacheControl(requests.Session(),
+            os.makedirs(self._mic_cache_dir, exist_ok=True)
+        
+            cached_sess = CacheControl(requests_session,
                                        heuristic=cache_override,
-                                       cache=FileCache(P_CACHE_DIR))
-            resp = cached_sess.get(mic_site + mic_rel_url)
+                                       cache=FileCache(self._mic_cache_dir))
+            resp = cached_sess.get(self._mic_site + self._mic_rel_url)
             binary_page_content = resp.content
+            try:
+                self.from_cache = resp.from_cache
+                logger.debug('from_cache reported by CacheControl:'
+                             + ' from_cache = {}'.format(self.from_cache))
+            except AttributeError:
+                self.from_cache = False
+                logger.debug('from_cache missing from CacheControl.'
+                             + ' Default from_cache ='
+                             + ' {}'.format(self.from_cache))
             #
             # Write new content to persisted file
             fh = open(fna_pub, 'wb')
             fh.write(binary_page_content)
             fh.close()
+            self.from_persisted = False
         #
         # Parse it using the html module and save the result in tree.
         #
@@ -250,10 +325,13 @@ class ISO10383MIC:
         #
         # Fetch the MIC registry content as a CSV file
         #
-        fna_csv = mic_persistence_path + '/' + 'ISO10383_MIC.csv'
+        
+        fna_csv = os.path.join(self._mic_persistence_dir,'ISO10383_MIC.csv')
 
         use_persisted_mic_csv = False
-        if use_persisted_mic_pub and os.path.isfile(fna_csv):
+
+        # Only consider persisted mic if persisted publication page was used
+        if use_persisted_mic_pub and os.path.isfile(fna_csv) and self.from_persisted:
             logger.debug('Class method "%s": Persisted csv file "%s" exists.',
                          classname(self)
                          + '.'
@@ -274,33 +352,32 @@ class ISO10383MIC:
         #
         if (use_persisted_mic_csv):
             # read content from persisted file
-            logger.debug('Class method "%s": Persisted file "%s" is suitable.',
-                         classname(self)
-                         + '.'
-                         + inspect.currentframe().f_code.co_name
-                         + '()',
+            logger.debug('Persisted file "%s" is suitable.',
                          fna_csv)
         else:
-            logger.debug('Class method "%s": Persisted file "%s"'
+            logger.debug('Persisted file "%s"'
                          ' is unsuitable, fetch from source.',
-                         classname(self)
-                         + '.'
-                         + inspect.currentframe().f_code.co_name
-                         + '()',
                          fna_csv)
-            csv_url = mic_site + mic_csv_rel_url
-            logger.debug('Class method "%s": fetch "%s to local file %s".',
-                         classname(self)
-                         + '.'
-                         + inspect.currentframe().f_code.co_name
-                         + '()',
+            csv_url = self._mic_site + mic_csv_rel_url
+            logger.debug('fetch "%s to local file %s".',
                          csv_url,
                          fna_csv)
             # Get the csv file
-            cached_sess = CacheControl(requests.Session(),
+            # cached_sess = CacheControl(requests.Session(),
+            cached_sess = CacheControl(requests_session,                                       
                                        heuristic=OneDayHeuristic(),
-                                       cache=FileCache(P_CACHE_DIR))
+                                       cache=FileCache(self._mic_cache_dir))
             resp = cached_sess.get(csv_url)
+            try:
+                self.from_cache = resp.from_cache
+                logger.debug('from_cache reported by CacheControl:'
+                             + ' from_cache = {}'.format(self.from_cache))
+            except AttributeError:
+                self.from_cache = False
+                logger.debug('from_cache missing from CacheControl.'
+                             + ' Default from_cache ='
+                             + ' {}'.format(self.from_cache))
+            self.from_persisted = False
             # Write new (binary) csv file to persisted file
             fh = open(fna_csv, 'wb')
             fh.write(resp.content)
@@ -309,7 +386,7 @@ class ISO10383MIC:
         #
         # Read and parse the downloaded CSV file to a list of Dict
         mic_rows = []
-        with open(fna_csv, 'r', encoding=mic_encoding) as the_file:
+        with open(fna_csv, 'r', encoding=self._mic_csv_encoding) as the_file:
             reader = csv.DictReader(the_file)
             try:
                 for line in reader:
@@ -329,11 +406,7 @@ class ISO10383MIC:
                                 columns=row.keys())
         #
         # print(self.micDf)
-        logger.debug('Class method "%s" return MIC as pandas DataFrame.',
-                     classname(self)
-                     + '.'
-                     + inspect.currentframe().f_code.co_name
-                     + '()')
+        logger.debug('Return MIC as pandas DataFrame.')
         return(self.mic)
 
 
@@ -391,3 +464,5 @@ if __name__ == '__main__':
     df = m.download_mic()
     print('Returned MIC DataFrame:')
     print(df)
+    print(' * from_persisted: {}'.format(m.from_persisted))
+    print(' * from_cache:     {}'.format(m.from_cache))

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ab1cf8135cc5e2f7ce28d9f124a1b5ef4489274b5d3dc6465a2acae34f5b8bf8"
+            "sha256": "a17ebdcb783f85523c5b0b9cf3988ee51d8452b6f5ee5d5fd22096cf0726c3f0"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -492,6 +492,14 @@
             "index": "pypi",
             "version": "==2.10.0"
         },
+        "pytest-datafiles": {
+            "hashes": [
+                "sha256:143329cbb1dbbb07af24f88fa4668e2f59ce233696cf12c49fd1c98d1756dbf9",
+                "sha256:e349b6ad7bcca111f3677b7201d3ca81f93b5e09dcfae8ee2be2c3cae9f55bc7"
+            ],
+            "index": "pypi",
+            "version": "==2.0"
+        },
         "pytest-flake8": {
             "hashes": [
                 "sha256:1b82bb58c88eb1db40524018d3fcfd0424575029703b4e2d8e3ee873f2b17027",
@@ -545,6 +553,13 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
             "version": "==2.24.0"
+        },
+        "requests-testadapter": {
+            "hashes": [
+                "sha256:0a9f824acc995753ca6f2e306fbbdb16015c8c44c1d14c9060717e32b99318b0"
+            ],
+            "index": "pypi",
+            "version": "==0.3.0"
         },
         "six": {
             "hashes": [

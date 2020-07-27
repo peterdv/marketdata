@@ -20,7 +20,7 @@ flake8:
 
 
 cov:
-	PYTHONPATH=marketdata/iso10383mic pytest --cov
+	PYTHONPATH=marketdata/iso10383mic pytest --cov=./marketdata --cov-report=html
 
 cov-report: 
 	coverage combine .coverage
