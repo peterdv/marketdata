@@ -18,6 +18,7 @@ lxml = "*"
 pytest-flake8 = "*"
 pytest-datafiles = "*"
 requests-testadapter = "*"
+codecov = "*"
 
 [requires]
 python_version = "3.6"

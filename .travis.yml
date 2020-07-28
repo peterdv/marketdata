@@ -22,5 +22,5 @@ script:
   - make cov
   - make flake8
 
-# after_success:
-#   - coveralls
+after_success:
+  - codecov
