@@ -34,13 +34,17 @@ Links:
 
    * Project `github repository`_
    * Continuous integration at:
+     
      * `travis CI master branch`_
      * `travis CI develop branch`_
+       
    * Code coverage at:
+     
      * `codecov master branch`_
      * `codecov develop branch`_
 
-.. _`github repository`: https://github.com/peterdv/test-readme-rst
+
+.. _`github repository`: https://github.com/peterdv/marketdata
 .. _`travis CI master branch`: https://travis-ci.com/github/peterdv/marketdata
 .. _`travis CI develop branch`: https://travis-ci.com/github/peterdv/marketdata
 .. _`codecov master branch`: https://codecov.io/gh/peterdv/marketdata
