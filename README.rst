@@ -47,8 +47,8 @@ Links:
 .. _`github repository`: https://github.com/peterdv/marketdata
 .. _`travis CI master branch`: https://travis-ci.com/github/peterdv/marketdata
 .. _`travis CI develop branch`: https://travis-ci.com/github/peterdv/marketdata
-.. _`codecov master branch`: https://codecov.io/gh/peterdv/marketdata
-.. _`codecov develop branch`: https://codecov.io/gh/peterdv/marketdata
+.. _`codecov master branch`: https://codecov.io/gh/peterdv/marketdata/branch/master
+.. _`codecov develop branch`: https://codecov.io/gh/peterdv/marketdata/branch/develop
 
 
 .. Build status badge for master branch
@@ -66,12 +66,12 @@ Links:
 .. Code coverage badge for master branch
 .. |code-coverage-master|
    image:: https://codecov.io/gh/peterdv/marketdata/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/peterdv/marketdata
+   :target: https://codecov.io/gh/peterdv/marketdata/branch/master
    :alt: Code coverage for master branch
 
 .. Code coverage badge for develop branch
 .. |code-coverage-develop|
    image:: https://codecov.io/gh/peterdv/marketdata/branch/develop/graph/badge.svg
-   :target: https://codecov.io/gh/peterdv/marketdata
+   :target: https://codecov.io/gh/peterdv/marketdata/branch/develop
    :alt: Code coverage for develop branch
 
