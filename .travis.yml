@@ -2,10 +2,13 @@
 language: python
 
 python:
-  - "3.5"
   - "3.6"
-  - "3.7"
-  - "3.8"
+
+# whitelist
+branches:
+  only:
+    - master
+    - develop
 
 before_install:
   - export PYTHONPATH=$PYTHONPATH:$(pwd) 
