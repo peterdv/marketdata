@@ -1,10 +1,12 @@
 # -*- coding: utf-8; mode: python-mode; -*-
 
+
 def test_always_passes():
     assert True
 
 # def test_always_fails():
 #     assert False
+
 
 def inc(x):
     return x + 1
@@ -13,14 +15,15 @@ def inc(x):
 def test_answer():
     assert inc(3) == 4
 
+
 #
 # The tmp_path fixture will provide a temporary directory
 # unique to the test invocation,
 # created in the base temporary directory.
 #
-import os
 
 CONTENT = "content"
+
 
 #
 # The tmp_path fixture will provide a pathlib.Path object
@@ -35,6 +38,7 @@ def test_create_file_tmp_path(tmp_path):
     assert p.read_text() == CONTENT
     assert len(list(tmp_path.iterdir())) == 1
     # assert 0
+
 
 #
 # The tmpdir fixture will provide a py.path.local object

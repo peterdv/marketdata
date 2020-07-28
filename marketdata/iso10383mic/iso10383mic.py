@@ -13,7 +13,9 @@ from cachecontrol.caches.file_cache import FileCache
 import pandas as pd
 import logging
 from one_day_heuristic import OneDayHeuristic
-# from . import oneDayHeuristic
+from requests_testadapter import Resp
+
+# From . import oneDayHeuristic
 # import oneDayHeuristic
 
 #
@@ -42,12 +44,14 @@ def classname(x):
 #
 # https://stackoverflow.com/questions/10123929/fetch-a-file-from-a-local-url-with-python-requests
 #
-# As @WooParadog explained requests library doesn't know how to handle local files.
+# As @WooParadog explained requests library doesn't know how to handle
+# local files.
 # Although, current version allows to define transport adapters.
 #
-# Therefore you can simply define you own adapter which will be able to handle local files, e.g.:
+# Therefore you can simply define you own adapter which will be able to handle
+# local files, e.g.:
 #
-from requests_testadapter import Resp
+
 
 class LocalFileAdapter(requests.adapters.HTTPAdapter):
     def build_response_from_file(self, request):
@@ -69,7 +73,6 @@ class LocalFileAdapter(requests.adapters.HTTPAdapter):
              verify=True, cert=None, proxies=None):
 
         return self.build_response_from_file(request)
-
 
 
 class ISO10383MIC:
@@ -149,8 +152,6 @@ class ISO10383MIC:
     BELGIUM
     Contact: MIC-ISO10383.Generic@swift.com
     """
-
-
     def __init__(self,
                  mic_site='https://www.iso20022.org',
                  mic_rel_url='/market-identifier-codes',
@@ -181,8 +182,6 @@ class ISO10383MIC:
         self._mic_tmp_dir = mic_tmp_dir
         self._mic_cache_dir = mic_cache_dir
         self._mic_persistence_dir = mic_persistence_dir
-        
-
 
     def download_mic(self):
         """Download MIC registry and convert it to a pandas.DataFrame.
@@ -226,7 +225,8 @@ class ISO10383MIC:
         # 'https://www.iso20022.org/market-identifier-codes'
         #
         os.makedirs(self._mic_persistence_dir, exist_ok=True)
-        fna_pub = os.path.join(self._mic_persistence_dir, 'market-identifier-codes.html')
+        fna_pub = os.path.join(self._mic_persistence_dir,
+                               'market-identifier-codes.html')
         #
         requests_session = requests.session()
         requests_session.mount('file://', LocalFileAdapter())
@@ -263,10 +263,10 @@ class ISO10383MIC:
                          self._mic_site + self._mic_rel_url)
             #
             cache_override = OneDayHeuristic()
-            
+
             # cached_sess = CacheControl(requests.Session(),
             os.makedirs(self._mic_cache_dir, exist_ok=True)
-        
+
             cached_sess = CacheControl(requests_session,
                                        heuristic=cache_override,
                                        cache=FileCache(self._mic_cache_dir))
@@ -325,13 +325,16 @@ class ISO10383MIC:
         #
         # Fetch the MIC registry content as a CSV file
         #
-        
-        fna_csv = os.path.join(self._mic_persistence_dir,'ISO10383_MIC.csv')
+
+        fna_csv = os.path.join(self._mic_persistence_dir, 'ISO10383_MIC.csv')
 
         use_persisted_mic_csv = False
 
         # Only consider persisted mic if persisted publication page was used
-        if use_persisted_mic_pub and os.path.isfile(fna_csv) and self.from_persisted:
+        use_p = (use_persisted_mic_pub
+                 and os.path.isfile(fna_csv)
+                 and self.from_persisted)
+        if (use_p):
             logger.debug('Class method "%s": Persisted csv file "%s" exists.',
                          classname(self)
                          + '.'
@@ -364,7 +367,7 @@ class ISO10383MIC:
                          fna_csv)
             # Get the csv file
             # cached_sess = CacheControl(requests.Session(),
-            cached_sess = CacheControl(requests_session,                                       
+            cached_sess = CacheControl(requests_session,
                                        heuristic=OneDayHeuristic(),
                                        cache=FileCache(self._mic_cache_dir))
             resp = cached_sess.get(csv_url)
