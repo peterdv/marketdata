@@ -47,3 +47,10 @@ Condensed naming convensions from
 
 * **Constants** names should be all capital letters with underscores separating words.
   Constants are usually defined on a module level. 
+
+  
+Docstring guide
+---------------
+
+For Doc strings, follow the
+`numpy docstring guide <https://numpydoc.readthedocs.io/en/latest/format.html>`_

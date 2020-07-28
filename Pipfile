@@ -16,6 +16,8 @@ coverage = "*"
 pytest-cov = "*"
 lxml = "*"
 pytest-flake8 = "*"
+pytest-datafiles = "*"
+requests-testadapter = "*"
 
 [requires]
 python_version = "3.6"
