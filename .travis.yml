@@ -9,6 +9,7 @@ branches:
   only:
     - master
     - develop
+    - /.*/
 
 before_install:
   - export PYTHONPATH=$PYTHONPATH:$(pwd) 
