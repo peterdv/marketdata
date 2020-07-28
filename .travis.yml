@@ -1,0 +1,23 @@
+
+language: python
+
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+
+before_install:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd) 
+
+install:
+  - pip install pipenv
+  - pipenv install --dev
+
+script:
+  - make test
+  - make cov
+  - make flake8
+
+# after_success:
+#   - coveralls
