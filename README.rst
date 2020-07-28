@@ -33,19 +33,12 @@ Project status summary
    :alt: Code coverage for develop branch
    :align: left
 
-.. list-table:: Project status summary
-   :widths: 15 10 30
-   :header-rows: 1
 
-   * - 
-     - master
-     - develop
-   * - Teststatus
-     - |badgeTravisMaster| 
-     - |badgeTravisDevelop| 
-   * - Coverage
-     - |badgeCodecovMaster|
-     - |badgeCodecovDevelop|
+|             | master               | develop               |
+| :---        |          :---:       |       :---:           |
+| Test status | |badgeTravisMaster|  | |badgeTravisDevelop|  |
+| Coverage    | |badgeCodecovMaster| | |badgeCodecovDevelop| |
+
 
  master
  ------
