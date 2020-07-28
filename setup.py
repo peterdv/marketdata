@@ -20,6 +20,6 @@ from os.path import splitext
 setup(
     name='marketdata',
     package_dir={'': 'marketdata'},
-    packages=find_packages(where='src', exclude=('tests',)),
+    packages=find_packages(where='marketdata', exclude=('tests',)),
     py_modules=[splitext(basename(path))[0] for path in glob('marketdata/*.py')],
 )

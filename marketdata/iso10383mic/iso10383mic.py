@@ -12,7 +12,7 @@ from cachecontrol import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 import pandas as pd
 import logging
-from one_day_heuristic import OneDayHeuristic
+from .one_day_heuristic import OneDayHeuristic
 from requests_testadapter import Resp
 
 # From . import oneDayHeuristic

@@ -1,5 +1,5 @@
 # -*- coding: utf-8; mode: python-mode; -*-
-
+import sys
 
 def test_always_passes():
     assert True
@@ -15,6 +15,15 @@ def inc(x):
 def test_answer():
     assert inc(3) == 4
 
+def test_testing_environment():
+    """Print information on the running test environment
+
+    """
+    #
+    print('sys.path contains:')
+    for p in sys.path:
+        print(' * "{}"'.format(p))
+    assert 1
 
 #
 # The tmp_path fixture will provide a temporary directory

@@ -12,18 +12,21 @@ pep8:
 # py.test --pep8 -m pep8 --clearcache
 # pep8 --show-source --show-pep8
 
+test:
+	python -m pytest -v -rA
+
 pep8-tests:
-	PYTHONPATH=/home/peterdv/proj/marketdata/marketdata/iso10383mic pytest --pep8 -m pep8 tests
+	python -m pytest --pep8 -m pep8 tests
 
 flake8:
-	pytest --cache-clear --flake8 -m flake8 marketdata
+	python -m pytest --cache-clear --flake8 -m flake8 marketdata
 
 flake8-tests:
-	PYTHONPATH=marketdata/iso10383mic pytest --cache-clear --flake8 -m flake8 tests
+	python -m pytest --cache-clear --flake8 -m flake8 tests
 
 
 cov:
-	PYTHONPATH=marketdata/iso10383mic pytest --cov=./marketdata --cov-report=html
+	python -m pytest --cov=./marketdata --cov-report=html
 
 cov-report: 
 	coverage combine .coverage
