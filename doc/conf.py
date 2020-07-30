@@ -69,7 +69,7 @@ elif use_module == 'autoapi':
 # Support for NumPy and Google style docstrings
 # https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
 extensions.append('sphinx.ext.napoleon')
-napoleon_google_docstring = True
+napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_init_with_doc = True

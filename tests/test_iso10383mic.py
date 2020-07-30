@@ -7,7 +7,7 @@ import datetime
 import pytest
 import pandas
 
-from marketdata.iso10383mic.iso10383mic import ISO10383MIC
+from marketdata.referencedata.iso10383mic import ISO10383MIC
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),

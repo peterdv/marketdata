@@ -42,18 +42,34 @@ def classname(x):
 
 #
 #
-# https://stackoverflow.com/questions/10123929/fetch-a-file-from-a-local-url-with-python-requests
-#
-# As @WooParadog explained requests library doesn't know how to handle
-# local files.
-# Although, current version allows to define transport adapters.
-#
-# Therefore you can simply define you own adapter which will be able to handle
-# local files, e.g.:
 #
 
 
 class LocalFileAdapter(requests.adapters.HTTPAdapter):
+    """Transport adapter to handle local files in requests.
+
+    The requests library doesn't know how to handle local files.
+    The current version allows you to define transport adapters.
+
+    References
+    ----------
+
+    Based on `b1r3k <https://stackoverflow.com/users/216172/b1r3k>`_'s
+    `answer <https://stackoverflow.com/a/22989322>`_.
+
+    This implementation uses
+    `requests-testadapter <https://github.com/ambv/requests-testadapter>`_.
+
+    Examples
+    --------
+
+    Intended usage:
+
+    >>> requests_session = requests.session()
+    >>> requests_session.mount('file://', LocalFileAdapter())
+    >>> requests_session.get('file:///dev/null')
+
+    """
     def build_response_from_file(self, request):
         lna = classname(self) + '.' + inspect.currentframe().f_code.co_name
         logger = logging.getLogger(lna)
@@ -132,6 +148,7 @@ class ISO10383MIC:
     and trade reporting facilities
     as sources of prices and related information in order to facilitate
     automated processing.
+
     It is intended for use in
     any application and communication for identification of places
 
