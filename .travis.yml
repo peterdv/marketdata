@@ -1,0 +1,27 @@
+
+language: python
+
+python:
+  - "3.6"
+
+# whitelist
+branches:
+  only:
+    - master
+    - develop
+    - /.*/
+
+before_install:
+  - export PYTHONPATH=$PYTHONPATH:$(pwd) 
+
+install:
+  - pip install pipenv
+  - pipenv install --dev
+
+script:
+  - make test
+  - make cov
+  - make flake8
+
+after_success:
+  - codecov

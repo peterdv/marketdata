@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+pytest = "*"
+tox = "*"
+pytest-pep8 = "*"
+sphinx-autoapi = "*"
+pandas = "*"
+cachecontrol = {extras = ["filecache"], version = "*"}
+coverage = "*"
+pytest-cov = "*"
+lxml = "*"
+pytest-flake8 = "*"
+pytest-datafiles = "*"
+requests-testadapter = "*"
+codecov = "*"
+
+[requires]
+python_version = "3.6"
