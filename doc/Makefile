@@ -18,6 +18,7 @@ help:
 realclean: cleanapidoc clean
 	find . -name "*~"  -print -exec rm -f {} \;
 	find . -name ".*~" -print -exec rm -f {} \;
+	rm -fr _build/*
 
 cleanapidoc:
 	rm -fr $(APIDOCDIR)

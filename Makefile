@@ -2,6 +2,7 @@
 
 realclean:
 	$(MAKE) -C doc realclean
+	rm -fr coverage_html_report
 	find . -name "*~"  -print -exec rm -f {} \;
 	find . -name ".*~" -print -exec rm -f {} \;
 
